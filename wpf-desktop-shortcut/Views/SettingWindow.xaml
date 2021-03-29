@@ -1,0 +1,207 @@
+﻿<Window x:Class="wpf_desktop_shortcut.Views.SettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:wpf_desktop_shortcut.Views"
+        xmlns:cvts="clr-namespace:wpf_desktop_shortcut.Converters"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        Title="SettingWindow" 
+        Height="380" 
+        Width="350"
+        Topmost="True"
+        Closing="Window_Closing"
+        Style="{DynamicResource windowStyle}"
+        Icon="/wpf-desktop-shortcut;component/Resources/doge.ico"
+        >
+    <Window.Resources>
+        <Style TargetType="{x:Type Window}" x:Key="windowStyle">
+            <Setter Property="WindowStyle" Value="None"/>
+            <Setter Property="ResizeMode" Value="NoResize"/>
+            <Setter Property="AllowsTransparency" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Topmost" Value="True"/>
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome CaptionHeight="20"
+                                  ContextMenuService.IsEnabled="False"
+                                  GlassFrameThickness="0"
+                                  ResizeBorderThickness="0"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SettingMainButton"
+               TargetType="{x:Type Button}" 
+               BasedOn="{StaticResource BaseButtonStyle}">
+            <Style.Setters>
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="Height" Value="22"/>
+                <Setter Property="Border.CornerRadius" Value="2"/>
+                <Setter Property="Foreground" Value="#fff"/>
+            </Style.Setters>
+        </Style>
+
+        <cvts:Base64Converter x:Key="Base64Converter"/>
+
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Background="#1e1e1e">
+            <TextBlock Text="Settings"
+                       LineHeight="11"
+                       Margin="15 4 0 0"
+                       Foreground="White" 
+                       HorizontalAlignment="Left"/>
+            <Button HorizontalAlignment="Right"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Margin="0 0 4 0"
+                    Click="Button_Click"
+                    Width="25"
+                    Height="25"
+                    Content="{DynamicResource CancelMark}"
+                    WindowChrome.IsHitTestVisibleInChrome="True"
+                    Style="{DynamicResource BaseButtonStyle}">
+            </Button>
+        </Grid>
+        <Grid Grid.Row="1" Background="#202229">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <ListView Margin="30 30 30 4" 
+                      Height="250"
+                      MaxHeight="250"
+                      Background="#303339"
+                      ItemsSource="{Binding Shortcuts}"
+                      >
+                <ListView.Style>
+                    <Style TargetType="{x:Type ListView}">
+                        <Setter Property="ItemContainerStyle" Value="{DynamicResource ShortcutsEditableListItem}"/>
+                        <Setter Property="ItemTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 Width="100"
+                                                 MaxLength="30"
+                                                 Background="Transparent"
+                                                 BorderBrush="#505559"
+                                                 Foreground="#fff"
+                                                 CaretBrush="#fff"
+                                                 Padding="3 0 0 0"
+                                                 Text="{Binding IconName}"
+                                                 ToolTip="이름을 입력해주세요."
+                                                 />
+                                        <ComboBox Grid.Column="1"
+                                                  Margin="4 0 0 0"
+                                                  Width="60"
+                                                  Background="Transparent"
+                                                  BorderBrush="#202229"
+                                                  ItemsSource="{Binding DataContext.ExecuteTypes, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                                  SelectedItem="{Binding ExecuteType}"
+                                                  >
+
+                                        </ComboBox>
+                                        <!--<Button Grid.Column="2"
+                                                Margin="6 0 0 0"
+                                                Background="#00000000"
+                                                Foreground="#fff"
+                                                Command="{Binding DataContext.RegistFileCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                                CommandParameter="{Binding .}"
+                                                Content="파일 찾기">
+                                            <Button.Style>
+                                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                                                    <Setter Property="Border.CornerRadius" Value="0"/>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>-->
+                                        <TextBox Grid.Column="2"
+                                                 Margin="6 0 0 0"
+                                                 MaxWidth="70"
+                                                 Width="70"
+                                                 Background="Transparent"
+                                                 BorderBrush="#505559"
+                                                 Text="{Binding FilePath}"
+                                                 ToolTip="실행할 url 주소나 로컬 파일 경로를 입력해주세요."
+                                                 >
+                                        </TextBox>
+                                        <Button Grid.Column="3"
+                                                Margin="6 0 0 0"
+                                                Style="{DynamicResource ShorcutButton}"
+                                                Background="#00000000"
+                                                Command="{Binding DataContext.RegistImgCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                                CommandParameter="{Binding .}"
+                                                ToolTip="표시할 아이콘을 입력해주세요."
+                                                >
+                                            <Border  
+                                                Width="20"
+                                                Height="20"
+                                                CornerRadius="2"
+                                                Background="{Binding IconBase64, Converter={StaticResource Base64Converter}}"
+                                                ></Border>
+                                         </Button>
+                                        <Button
+                                            Width="20"
+                                            Height="20"
+                                            Grid.Column="4"
+                                            Content="{DynamicResource CancelMark}"
+                                            Style="{DynamicResource BaseButtonStyle}"
+                                            Command="{Binding DataContext.DeleteShortcutCommand,RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                            CommandParameter="{Binding}"
+                                            >
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.Style>
+            </ListView>
+            <StackPanel HorizontalAlignment="Left" 
+                        Margin="30 0 0 0"
+                        Grid.Row="1"
+                        Orientation="Horizontal"
+                        >
+                <Button Style="{DynamicResource SettingMainButton}"
+                        Content="{DynamicResource AddMark}"
+                        Width="22"
+                        HorizontalAlignment="Left"
+                        Command="{Binding AddShortcutComand}"
+                        />
+                <TextBlock Text="아이콘 더하기" 
+                           Margin="2 7 0 0"
+                           Foreground="#fff"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" 
+                        HorizontalAlignment="Right"
+                        Grid.Row="1"
+                        Margin="0 0 30 0"
+                        >
+                <Button Content="저장" 
+                        Style="{DynamicResource SettingMainButton}"
+                        Background="#1c97ea"
+                        Margin="0 0 10 0"
+                        Command="{Binding SaveCommand}"
+                        />
+                <Button Content="닫기"
+                        Style="{DynamicResource SettingMainButton}"
+                        IsDefault="True"
+                        Click="Button_Click"
+                        />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

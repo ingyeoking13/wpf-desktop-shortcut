@@ -1,0 +1,83 @@
+﻿<Window x:Class="wpf_desktop_shortcut.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:wpf_desktop_shortcut"
+        xmlns:cvts="clr-namespace:wpf_desktop_shortcut.Converters"
+        mc:Ignorable="d"
+        Title="MainWindow" 
+        Height="800" 
+        Width="100"
+        Style="{DynamicResource windowStyle}"
+        Icon="/wpf-desktop-shortcut;component/Resources/doge.ico"
+        >
+    <Window.Resources>
+        <Style TargetType="{x:Type Window}" x:Key="windowStyle">
+            <Setter Property="WindowStyle" Value="None"/>
+            <Setter Property="ResizeMode" Value="NoResize"/>
+            <Setter Property="AllowsTransparency" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Topmost" Value="True"/>
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome CaptionHeight="20"
+                                  ContextMenuService.IsEnabled="False"
+                                  GlassFrameThickness="0"
+                                  ResizeBorderThickness="0">
+                    </WindowChrome>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <cvts:Base64Converter x:Key="Base64Converter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Background="#1e1e1e">
+            <Button HorizontalAlignment="Right"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Margin="0 0 4 0"
+                    IsCancel="True"
+                    Click="Button_Click"
+                    Width="25"
+                    Height="25"
+                    Content="{DynamicResource CancelMark}"
+                    WindowChrome.IsHitTestVisibleInChrome="True"
+                    Style="{DynamicResource BaseButtonStyle}">
+            </Button>
+        </Grid>
+        <Grid Background="#202229" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ItemsControl ItemsSource="{Binding Shortcuts}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid IsItemsHost="True" Columns="2"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{DynamicResource ShorcutButton}"
+                                Width="40" 
+                                Height="40" 
+                                Margin="0 5 0 2"
+                                Background="#00000000"
+                                ToolTip="{Binding IconName}"
+                                Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                CommandParameter="{Binding}"
+                                >
+                            <Border Width="38" 
+                                    Height="38"
+                                    Background="{Binding IconBase64, Converter={StaticResource Base64Converter}}"/>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Grid>
+</Window>
