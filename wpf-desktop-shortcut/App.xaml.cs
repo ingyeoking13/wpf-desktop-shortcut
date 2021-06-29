@@ -12,6 +12,21 @@ namespace wpf_desktop_shortcut
         Winforms.NotifyIcon noti;
         MainWindow _mainWindow;
         SettingWindow _settingWindow;
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        public App()
+        {
+
+            var domain = AppDomain.CurrentDomain;
+            domain.UnhandledException += (s, e) =>
+            {
+                var exception = e.ExceptionObject as Exception;
+                _logger.Error($"Unhandled Exception occured.. {exception.Message}");
+                _logger.Error($"{exception.StackTrace}");
+                _logger.Fatal($"Is Terminating : {e.IsTerminating}");
+            };
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -19,12 +34,9 @@ namespace wpf_desktop_shortcut
             {
                 SetNoti();
             }
-            if (_mainWindow == null)
-            {
-                _mainWindow = new MainWindow();
-                _mainWindow.Show();
-            }
+            ShowMainWindow();
         }
+
 
         private void SetNoti()
         {
@@ -41,7 +53,7 @@ namespace wpf_desktop_shortcut
         {
             if (e.Button == Winforms.MouseButtons.Left)
             {
-                _mainWindow.Show();
+                ShowMainWindow();
             }
             else if (e.Button == Winforms.MouseButtons.Right)
             {
@@ -63,6 +75,13 @@ namespace wpf_desktop_shortcut
                 _settingWindow.ShowDialog();
                 _settingWindow = null;
             }
+        }
+        private void ShowMainWindow()
+        {
+            if (_mainWindow == null)
+                _mainWindow = new MainWindow();
+            
+            _mainWindow.Show();
         }
     }
 }

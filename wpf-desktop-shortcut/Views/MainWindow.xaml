@@ -7,7 +7,7 @@
         xmlns:cvts="clr-namespace:wpf_desktop_shortcut.Converters"
         mc:Ignorable="d"
         Title="MainWindow" 
-        Height="800" 
+        Height="940" 
         Width="100"
         Style="{DynamicResource windowStyle}"
         Icon="/wpf-desktop-shortcut;component/Resources/doge.ico"
@@ -50,32 +50,37 @@
                     Style="{DynamicResource BaseButtonStyle}">
             </Button>
         </Grid>
-        <Grid Background="#202229" Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <ItemsControl ItemsSource="{Binding Shortcuts}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid IsItemsHost="True" Columns="2"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Button Style="{DynamicResource ShorcutButton}"
-                                Width="20" 
-                                Height="20" 
-                                Margin="0 5 0 2"
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Background="#202229" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ItemsControl ItemsSource="{Binding Shortcuts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid IsItemsHost="True" Columns="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Style="{DynamicResource ShorcutButton}"
+                                Width="35" 
+                                Height="35" 
+                                Margin="0 2 0 2"
                                 Background="#00000000"
                                 ToolTip="{Binding IconName}"
                                 Command="{Binding DataContext.OpenCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                 CommandParameter="{Binding}"
                                 >
-                            <Border Background="{Binding IconBase64, Converter={StaticResource Base64Converter}}"/>
-                        </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Grid>
+                                <Border CornerRadius="2" 
+                                        Width="33"
+                                        Height="33"
+                                    Background="{Binding IconBase64, Converter={StaticResource Base64Converter}}"/>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>
