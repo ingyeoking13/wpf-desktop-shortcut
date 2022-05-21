@@ -54,6 +54,9 @@ namespace wpf_desktop_shortcut.ViewModels
                     case ExecuteTypes.EXE:
                         Process.Start(model.FilePath);
                         break;
+                    case ExecuteTypes.Edge:
+                        Process.Start("msedge", model.FilePath);
+                        break;
                 }
             }
             catch(Exception e)

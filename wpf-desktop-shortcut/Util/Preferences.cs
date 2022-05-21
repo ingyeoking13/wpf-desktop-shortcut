@@ -85,7 +85,7 @@ namespace wpf_desktop_shortcut.Util
                 }
                 return true;
             }
-            catch(Exception e)
+            catch
             {
                 return false;
             }

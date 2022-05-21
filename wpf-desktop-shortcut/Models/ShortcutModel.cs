@@ -4,9 +4,10 @@ namespace wpf_desktop_shortcut.Models
 {
     public enum ExecuteTypes
     {
-        IE,
+        IE=0,
         Chrome,
         EXE,
+        Edge,
     }
 
     public class ShortcutModel : ViewModelBase
