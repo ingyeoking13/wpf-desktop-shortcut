@@ -21,23 +21,21 @@ namespace wpf_desktop_shortcut.ViewModels
                 Shortcuts.Add(item);
         }
 
-        private Repository _repo;
+        private IRepository _repo;
 
-        public MainViewModel(Repository repo)
+        public MainViewModel(IRepository _repo)
         {
             OpenCommand = new RelayCommand<ShortcutModel>(OnOpen);
-            _repo = repo;
-            
+            this._repo = _repo;
             LoadData();
         }
 
         private void LoadData()
         {
-            List<ShortcutModel> list = new List<ShortcutModel>();
-            _repo.Load(list);
-            foreach(var item in list)
+            foreach (var item in _repo.ShortcutItems)
                 Shortcuts.Add(item);
         }
+
 
         private void OnOpen(ShortcutModel model)
         {

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Input;
 using wpf_desktop_shortcut.Models;
@@ -15,43 +13,45 @@ namespace wpf_desktop_shortcut.ViewModels
 {
     public class SettingsViewModel : ViewModelBase
     {
-        private Repository _repo;
+        private IRepository _repo;
         public bool IsModified { get; set; }
+        public CurrentAuth CurrentAuth { get; set; } = new CurrentAuth();
         public ObservableCollection<ShortcutModel> Shortcuts { get; set; }
         public ICommand AddShortcutComand { get; }
         public ICommand SaveCommand { get; }
         public ICommand RegistImgCommand { get; }
         public ICommand RegistFileCommand { get; }
         public ICommand DeleteShortcutCommand { get; }
-        
+        public ICommand LoginCommand { get; }
+        public ICommand LogoutCommand { get; }
+
         public Array ExecuteTypes
         {
             get { return Enum.GetValues(typeof(ExecuteTypes)); }
         }
 
-
-        public SettingsViewModel(Repository repo)
+        public SettingsViewModel(IRepository _repo)
         {
             AddShortcutComand = new RelayCommand<object>(OnAddShortCut);
             SaveCommand = new RelayCommand<object>(OnSave);
             RegistImgCommand = new RelayCommand<ShortcutModel>(OnRegistImgCommand);
             RegistFileCommand = new RelayCommand<ShortcutModel>(OnRegistFilePathCommand);
             DeleteShortcutCommand = new RelayCommand<ShortcutModel>(OnDelteShortcutCommand);
+            
+            LoginCommand = new RelayCommand<object>(OnLoginCommand);
+            LoginCommand = new RelayCommand<object>(OnLogoutCommand);
+
             Shortcuts = new ObservableCollection<ShortcutModel>();
-            _repo = repo;
+            this._repo = _repo;
             LoadAppdata();
         }
-
 
         private void LoadAppdata()
         {
             Shortcuts = new ObservableCollection<ShortcutModel>();
-            List<ShortcutModel> list = new List<ShortcutModel>();
-
-            _repo.Load(list);
-
-            foreach (var item in list)
+            foreach (var item in _repo.ShortcutItems)
                 Shortcuts.Add(item);
+            CurrentAuth.UserName = _repo.Auth.UserName;
         }
 
         private void OnAddShortCut(object obj)
@@ -62,7 +62,7 @@ namespace wpf_desktop_shortcut.ViewModels
 
         private void OnSave(object obj)
         {
-            _repo.Save(Shortcuts);
+            _repo.Save(Shortcuts, _repo.Auth);
             IsModified = false;
             
             (App.Current.MainWindow.DataContext as MainViewModel)
@@ -115,6 +115,29 @@ namespace wpf_desktop_shortcut.ViewModels
         {
             Shortcuts.Remove(obj);
             IsModified = true;
+        }
+        private void OnLoginCommand(object obj)
+        {
+
+        }
+
+        private void OnLogoutCommand(object obj)
+        {
+            DialogResult _result= MessageBox.Show( "로그아웃 하시겠습니까?", "로그아웃", MessageBoxButtons.OKCancel);
+            if (_result != DialogResult.OK) return;
+            App.Repo = new LocalRepository();
+            App.Repo.Load();
+        }
+    }
+
+
+    public class CurrentAuth : ViewModelBase
+    {
+        private string userName;
+        public string UserName
+        {
+            get { return userName; }
+            set { userName = value;  OnPropertyChanged();  }
         }
     }
 }

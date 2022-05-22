@@ -1,12 +1,11 @@
 ﻿using System.Windows;
-using wpf_desktop_shortcut.Repositories;
 using wpf_desktop_shortcut.ViewModels;
 
 namespace wpf_desktop_shortcut.Views
 {
     public partial class MainWindow : Window
     {
-        MainViewModel vm = new MainViewModel(new Repository());
+        MainViewModel vm = new MainViewModel(App.Repo);
         public MainWindow()
         {
             InitializeComponent();

@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Title="SettingWindow" 
-        Height="420" 
+        Height="480" 
         Width="450"
         Topmost="True"
         Closing="Window_Closing"
@@ -71,12 +71,32 @@
         </Grid>
         <Grid Grid.Row="1" Background="#202229">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
-            <ListView Margin="30 30 30 4" 
-                      Height="300"
-                      MaxHeight="300"
+            <StackPanel Margin="15 10" HorizontalAlignment="Left" Orientation="Horizontal">
+                <Button Content="{DynamicResource Person}"
+                        >
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource SettingMainButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentAuth.UserName}" Value="로컬사용자" >
+                                    <DataTrigger.Setters>
+                                        <Setter Property="ToolTip" Value="로그인"/>
+                                        <Setter Property="Command" Value="{Binding LoginCommand}"/>
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <TextBlock Text="{Binding CurrentAuth.UserName}" Margin="6 4 0 0" Foreground="#fff"/>
+            </StackPanel>
+            <ListView Margin="30 4 30 4" 
+                      Height="350"
+                      Grid.Row="1"
+                      MaxHeight="350"
                       Background="#303339"
                       ItemsSource="{Binding Shortcuts}"
                       >
@@ -174,7 +194,7 @@
             </ListView>
             <StackPanel HorizontalAlignment="Left" 
                         Margin="30 0 0 0"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         Orientation="Horizontal"
                         >
                 <Button Style="{DynamicResource SettingMainButton}"
@@ -189,7 +209,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Right"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         Margin="0 0 30 0"
                         >
                 <Button Content="저장" 

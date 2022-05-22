@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.IsolatedStorage;
 using wpf_desktop_shortcut.Models;
 
 namespace wpf_desktop_shortcut.Util
@@ -21,27 +21,30 @@ namespace wpf_desktop_shortcut.Util
         /// <summary>
         /// Load JSON data
         /// </summary>
-        public List<ShortcutModel> Load()
+        public (List<ShortcutModel> shortcutItems, Auth auth) Load()
         {
-            string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string dirPath = Path.Combine(docFolder, DirPath);
-
-            bool dirExist = Directory.Exists(dirPath);
-            if(dirExist == false)
-            {
-                Directory.CreateDirectory(dirPath);
-            }
-
-            string filePath = Path.Combine(dirPath, FilePath);
-            bool fileExist = File.Exists(filePath);
-            if (fileExist == false)
-            {
-                var tempStream = File.Create(filePath);
-                tempStream.Close();
-            }
-
-            List<ShortcutModel> result = new List<ShortcutModel>();
+            string filePath = _GetFilePath();
+            (List<ShortcutModel> shortcutItems, Auth auth) result = (new List<ShortcutModel>(), new Auth());
             using(FileStream stream = File.Open(filePath, FileMode.Open))
+            {
+                using (StreamReader streamReader = new StreamReader(stream))
+                {
+                    var readResult = streamReader.ReadToEnd();
+                    JObject jObject = JObject.Parse(readResult);
+                    string version = jObject["version"].ToString();
+                    result.auth = JsonConvert.DeserializeObject<Auth>(jObject["auth"].ToString());
+                    result.shortcutItems = JsonConvert.DeserializeObject<List<ShortcutModel>>(jObject["shortcutItems"].ToString());
+                }
+            }
+            return result;
+        }
+
+
+        public List<ShortcutModel> LoadV1()
+        {
+            string filePath = _GetFilePath();
+            List<ShortcutModel> result = new List<ShortcutModel>();
+            using (FileStream stream = File.Open(filePath, FileMode.Open))
             {
                 using (StreamReader streamReader = new StreamReader(stream))
                 {
@@ -55,25 +58,15 @@ namespace wpf_desktop_shortcut.Util
         /// <summary>
         /// Save JSON
         /// </summary>
-        public bool Save(IEnumerable<ShortcutModel> data)
+        public bool Save(IEnumerable<ShortcutModel> shortcutItems, Auth auth)
         {
+            object data = new { auth = auth, shortcutItems = shortcutItems, version = "2" };
             try
             {
-                string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string dirPath = Path.Combine(docFolder, DirPath);
-
-                bool dirExist = Directory.Exists(dirPath);
-                if (dirExist == false)
-                {
-                    Directory.CreateDirectory(dirPath);
-                }
-
-                string filePath = Path.Combine(dirPath, FilePath);
+                string filePath = _GetFilePath();
                 bool fileExist = File.Exists(filePath);
                 if (fileExist == true)
-                {
                     File.Delete(filePath);
-                }
 
                 using (FileStream stream = File.Create(filePath))
                 {
@@ -89,6 +82,26 @@ namespace wpf_desktop_shortcut.Util
             {
                 return false;
             }
+        }
+        
+        private string _GetFilePath()
+        {
+            string docFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string dirPath = Path.Combine(docFolder, DirPath);
+
+            bool dirExist = Directory.Exists(dirPath);
+            if (dirExist == false)
+                Directory.CreateDirectory(dirPath);
+
+            string filePath = Path.Combine(dirPath, FilePath);
+            bool fileExist = File.Exists(filePath);
+            if (fileExist == false)
+            {
+                var tempStream = File.Create(filePath);
+                tempStream.Close();
+            }
+
+            return filePath;
         }
     }
 }

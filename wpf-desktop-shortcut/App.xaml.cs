@@ -3,7 +3,9 @@ using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using wpf_desktop_shortcut.Views;
+using wpf_desktop_shortcut.Repositories;
 using Winforms = System.Windows.Forms;
+using wpf_desktop_shortcut.Models;
 
 namespace wpf_desktop_shortcut
 {
@@ -13,6 +15,7 @@ namespace wpf_desktop_shortcut
         MainWindow _mainWindow;
         SettingWindow _settingWindow;
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        public static IRepository Repo { get; set; } = new LocalRepository();
 
         public App()
         {
@@ -34,6 +37,7 @@ namespace wpf_desktop_shortcut
             {
                 SetNoti();
             }
+            LoadData();
             ShowMainWindow();
         }
 
@@ -82,6 +86,17 @@ namespace wpf_desktop_shortcut
                 _mainWindow = new MainWindow();
             
             _mainWindow.Show();
+        }
+
+        public void LoadData()
+        {
+            var _loadedItem = Repo.Load();
+            Auth _auth = _loadedItem.auth;
+            if (_auth == null)
+            {
+                Repo = new RemoteRepository();
+                Repo.Load();
+            }
         }
     }
 }
