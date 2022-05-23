@@ -80,6 +80,8 @@
                         >
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource SettingMainButton}">
+                            <Setter Property="Command" Value="{Binding LogoutCommand}"/>
+                            <Setter Property="ToolTip" Value="로그아웃"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding CurrentAuth.UserName}" Value="로컬사용자" >
                                     <DataTrigger.Setters>

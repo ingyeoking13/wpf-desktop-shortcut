@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PeanutButter.TinyEventAggregator;
+using System.Windows;
 using wpf_desktop_shortcut.Repositories;
 using wpf_desktop_shortcut.ViewModels;
 

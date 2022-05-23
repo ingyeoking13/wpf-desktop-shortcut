@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PeanutButter.TinyEventAggregator;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Windows;
 using wpf_desktop_shortcut.Models;
 using wpf_desktop_shortcut.Repositories;
 using wpf_desktop_shortcut.Util;
+using wpf_desktop_shortcut.Util.Events;
 
 namespace wpf_desktop_shortcut.ViewModels
 {
@@ -28,6 +30,15 @@ namespace wpf_desktop_shortcut.ViewModels
             OpenCommand = new RelayCommand<ShortcutModel>(OnOpen);
             this._repo = _repo;
             LoadData();
+
+
+            App.EA.GetEvent<ItemChanged>().Subscribe((list) =>
+            {
+                Shortcuts.Clear();
+                this._repo = App.Repo;
+                foreach (var item in App.Repo.ShortcutItems)
+                    Shortcuts.Add(item);
+            });
         }
 
         private void LoadData()

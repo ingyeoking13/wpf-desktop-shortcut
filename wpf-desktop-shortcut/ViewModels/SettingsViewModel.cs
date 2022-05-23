@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using System.Windows.Input;
+using wpf_desktop_shortcut.Business.Login;
 using wpf_desktop_shortcut.Models;
 using wpf_desktop_shortcut.Repositories;
 using wpf_desktop_shortcut.Util;
+using wpf_desktop_shortcut.Util.Events;
 
 namespace wpf_desktop_shortcut.ViewModels
 {
@@ -17,6 +20,7 @@ namespace wpf_desktop_shortcut.ViewModels
         public bool IsModified { get; set; }
         public CurrentAuth CurrentAuth { get; set; } = new CurrentAuth();
         public ObservableCollection<ShortcutModel> Shortcuts { get; set; }
+        public LoginWindow _loginWindow = null;
         public ICommand AddShortcutComand { get; }
         public ICommand SaveCommand { get; }
         public ICommand RegistImgCommand { get; }
@@ -39,7 +43,7 @@ namespace wpf_desktop_shortcut.ViewModels
             DeleteShortcutCommand = new RelayCommand<ShortcutModel>(OnDelteShortcutCommand);
             
             LoginCommand = new RelayCommand<object>(OnLoginCommand);
-            LoginCommand = new RelayCommand<object>(OnLogoutCommand);
+            LogoutCommand = new RelayCommand<object>(OnLogoutCommand);
 
             Shortcuts = new ObservableCollection<ShortcutModel>();
             this._repo = _repo;
@@ -116,20 +120,49 @@ namespace wpf_desktop_shortcut.ViewModels
             Shortcuts.Remove(obj);
             IsModified = true;
         }
+
         private void OnLoginCommand(object obj)
         {
+            if (_loginWindow != null) return;
 
+            _loginWindow = new LoginWindow(_repo.Auth);
+            _loginWindow.ShowDialog();
+
+            if (_loginWindow.DialogResult == true)
+            {
+                var remoteRepo = new RemoteRepository();
+                remoteRepo.UpdateAuth(_loginWindow.Auth);
+                _repo = remoteRepo;
+                _repo.Load();
+                App.Repo = _repo;
+
+                CurrentAuth.UserName = _repo.Auth.UserName;
+
+                Shortcuts.Clear();
+                foreach (var item in _repo.ShortcutItems)
+                    Shortcuts.Add(item);
+
+
+                App.EA.GetEvent<ItemChanged>().Publish(new List<ShortcutModel>(App.Repo.ShortcutItems));
+            }
+
+            _loginWindow = null;
         }
 
         private void OnLogoutCommand(object obj)
         {
             DialogResult _result= MessageBox.Show( "로그아웃 하시겠습니까?", "로그아웃", MessageBoxButtons.OKCancel);
             if (_result != DialogResult.OK) return;
+            App.Repo.Save(null, new Auth());
             App.Repo = new LocalRepository();
             App.Repo.Load();
+            _repo = App.Repo;
+            foreach (var item in App.Repo.ShortcutItems)
+                Shortcuts.Add(item);
+            CurrentAuth.UserName = "로컬사용자";
+            App.EA.GetEvent<ItemChanged>().Publish(new List<ShortcutModel>(App.Repo.ShortcutItems));
         }
     }
-
 
     public class CurrentAuth : ViewModelBase
     {

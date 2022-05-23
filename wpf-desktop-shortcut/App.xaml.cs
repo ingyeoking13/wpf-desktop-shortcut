@@ -6,6 +6,7 @@ using wpf_desktop_shortcut.Views;
 using wpf_desktop_shortcut.Repositories;
 using Winforms = System.Windows.Forms;
 using wpf_desktop_shortcut.Models;
+using PeanutButter.TinyEventAggregator;
 
 namespace wpf_desktop_shortcut
 {
@@ -15,6 +16,7 @@ namespace wpf_desktop_shortcut
         MainWindow _mainWindow;
         SettingWindow _settingWindow;
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        public static EventAggregator EA { get; } = new EventAggregator();
         public static IRepository Repo { get; set; } = new LocalRepository();
 
         public App()
@@ -92,7 +94,7 @@ namespace wpf_desktop_shortcut
         {
             var _loadedItem = Repo.Load();
             Auth _auth = _loadedItem.auth;
-            if (_auth == null)
+            if (_auth.UserName != "로컬사용자")
             {
                 Repo = new RemoteRepository();
                 Repo.Load();
