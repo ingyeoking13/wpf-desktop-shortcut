@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
+using System.Windows;
 using wpf_desktop_shortcut.Models;
 using wpf_desktop_shortcut.Util;
 
@@ -58,7 +60,7 @@ namespace wpf_desktop_shortcut.Repositories
             (ICollection<ShortcutModel> shortcutItems, Auth auth) result = (new List<ShortcutModel>(), new Auth());
             try
             {
-                string url = "http://localhost:8000/login?id=yohan";
+                string url = $"http://{auth.ServerHost}/login?id={auth.UserName}";
                 HttpWebRequest _req = (HttpWebRequest)WebRequest.Create(url);
                 _req.Method = "GET";
                 using (HttpWebResponse _res = (HttpWebResponse)_req.GetResponse())
@@ -74,8 +76,9 @@ namespace wpf_desktop_shortcut.Repositories
 
                     if (status == HttpStatusCode.OK)
                     {
-                        result.shortcutItems = JsonConvert.DeserializeObject<List<ShortcutModel>>(jobj["PackageJson"].ToString());
-                        result.auth.ServerHost = jobj["HostIP"]?.ToString();
+                        var shortcutItems = JObject.Parse(jobj["PackageJson"].ToString())["shortcutItems"];
+                        result.shortcutItems = JsonConvert.DeserializeObject<List<ShortcutModel>>(shortcutItems.ToString());
+                        result.auth.ServerHost = auth.ServerHost;
                         result.auth.UserName = jobj["UserName"]?.ToString();
                     }
                 }
@@ -83,6 +86,7 @@ namespace wpf_desktop_shortcut.Repositories
             catch (Exception e)
             {
                 _logger.Error($"{nameof(RemoteRepository)} Load : {e.Message}");
+                throw;
             }
             shortcutItems = result.shortcutItems ?? new List<ShortcutModel>();
             auth = result.auth;
@@ -96,14 +100,31 @@ namespace wpf_desktop_shortcut.Repositories
             Preferences.Instance.Save(origin.shortcutItems, auth);
             try
             {
-                string url = "http://localhost:8000/login?id=yohan";
+                var serialized = JsonConvert.SerializeObject(new {list = list, username= auth.UserName});
+                byte[] strByte = Encoding.UTF8.GetBytes(serialized);
+                string url = $"http://{auth.ServerHost}/update";
+
                 HttpWebRequest _req = (HttpWebRequest)WebRequest.Create(url);
                 _req.Method = "POST";
+                _req.ContentType = "application/json";
+                _req.ContentLength = strByte.Length;
+
+                Stream dataStream = _req.GetRequestStream();
+                dataStream.Write( strByte, 0, strByte.Length);
+                _req.GetResponse();
+            }
+            catch (WebException e)
+            {
+                MessageBox.Show(e.Message, "실패", MessageBoxButton.OK);
+                _logger.Error($"{nameof(RemoteRepository)} POST Save : {e.Message}");
+                throw;
             }
             catch (Exception e)
             {
                 _logger.Error($"{nameof(RemoteRepository)} POST Save : {e.Message}");
+                throw;
             }
+            this.shortcutItems = new List<ShortcutModel>(list);
             return;
         }
 

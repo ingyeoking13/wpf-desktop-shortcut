@@ -94,10 +94,24 @@ namespace wpf_desktop_shortcut
         {
             var _loadedItem = Repo.Load();
             Auth _auth = _loadedItem.auth;
-            if (_auth.UserName != "로컬사용자")
+            if (_auth.UserName != "로컬사용자" && _auth.UserName != "")
             {
                 Repo = new RemoteRepository();
-                Repo.Load();
+                ((RemoteRepository)Repo).UpdateAuth(_auth);
+                try
+                {
+                    Repo.Load();
+                } catch (Exception e)
+                {
+                    MessageBox.Show(e.Message, "실패", MessageBoxButton.OK);
+                    Repo = new LocalRepository();
+                    Repo.Load();
+                    _auth.UserName = "로컬사용자";
+                }
+            } 
+            else
+            {
+                _auth.UserName = "로컬사용자"; 
             }
         }
     }

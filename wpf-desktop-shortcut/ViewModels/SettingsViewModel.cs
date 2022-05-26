@@ -66,16 +66,22 @@ namespace wpf_desktop_shortcut.ViewModels
 
         private void OnSave(object obj)
         {
-            _repo.Save(Shortcuts, _repo.Auth);
-            IsModified = false;
-            
-            (App.Current.MainWindow.DataContext as MainViewModel)
-                .UpdateShortcuts(Shortcuts);
+            try
+            {
+                _repo.Save(Shortcuts, _repo.Auth);
+                IsModified = false;
 
-            MessageBox.Show(
-                "저장에 성공하였습니다", 
-                "저장완료", 
-                MessageBoxButtons.OK);
+                (App.Current.MainWindow.DataContext as MainViewModel)
+                    .UpdateShortcuts(Shortcuts);
+
+                MessageBox.Show(
+                    "저장에 성공하였습니다",
+                    "저장완료",
+                    MessageBoxButtons.OK);
+            } catch
+            {
+
+            }
         }
 
         private void OnRegistImgCommand(ShortcutModel model)
@@ -131,8 +137,8 @@ namespace wpf_desktop_shortcut.ViewModels
             if (_loginWindow.DialogResult == true)
             {
                 var remoteRepo = new RemoteRepository();
-                remoteRepo.UpdateAuth(_loginWindow.Auth);
                 _repo = remoteRepo;
+                remoteRepo.UpdateAuth(_loginWindow.Auth);
                 _repo.Load();
                 App.Repo = _repo;
 
@@ -141,7 +147,6 @@ namespace wpf_desktop_shortcut.ViewModels
                 Shortcuts.Clear();
                 foreach (var item in _repo.ShortcutItems)
                     Shortcuts.Add(item);
-
 
                 App.EA.GetEvent<ItemChanged>().Publish(new List<ShortcutModel>(App.Repo.ShortcutItems));
             }
@@ -153,14 +158,25 @@ namespace wpf_desktop_shortcut.ViewModels
         {
             DialogResult _result= MessageBox.Show( "로그아웃 하시겠습니까?", "로그아웃", MessageBoxButtons.OKCancel);
             if (_result != DialogResult.OK) return;
-            App.Repo.Save(null, new Auth());
-            App.Repo = new LocalRepository();
-            App.Repo.Load();
-            _repo = App.Repo;
-            foreach (var item in App.Repo.ShortcutItems)
-                Shortcuts.Add(item);
-            CurrentAuth.UserName = "로컬사용자";
-            App.EA.GetEvent<ItemChanged>().Publish(new List<ShortcutModel>(App.Repo.ShortcutItems));
+            try
+            {
+                ((RemoteRepository)App.Repo).UpdateAuth(new Auth());
+           }
+            catch
+            {
+
+            }
+            finally
+            {
+                App.Repo = new LocalRepository();
+                App.Repo.Load();
+                _repo = App.Repo;
+                Shortcuts.Clear();
+                foreach (var item in App.Repo.ShortcutItems)
+                    Shortcuts.Add(item);
+                CurrentAuth.UserName = "로컬사용자";
+                App.EA.GetEvent<ItemChanged>().Publish(new List<ShortcutModel>(App.Repo.ShortcutItems));
+            }
         }
     }
 

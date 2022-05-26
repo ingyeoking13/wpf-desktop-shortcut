@@ -20,11 +20,26 @@ namespace wpf_desktop_shortcut.Business.Login
         {
             try
             {
-                RequestRemoteInfo();
+                RequestRemoteInfo(this.HostServer.Text, this.UserName.Text);
             } 
+            catch (WebException ex)
+            {
+                string message = String.Empty;
+                if (ex.Response != null)
+                    using (var stream = ex.Response.GetResponseStream())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        message = reader.ReadToEnd();
+                    }
+                else message = ex.Message;
+
+                MessageBox.Show(message, "실패", MessageBoxButton.OK);
+                return;
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "실패", MessageBoxButton.OK);
+                return;
             }
             this.DialogResult = true;
             MessageBox.Show("성공적으로 로그인 되었습니다", "성공", MessageBoxButton.OK);
@@ -35,9 +50,9 @@ namespace wpf_desktop_shortcut.Business.Login
             this.DialogResult = false;
             this.Close();
         }
-        private void RequestRemoteInfo()
+        private void RequestRemoteInfo(string _serverhost, string _username)
         {
-            string url = "http://localhost:8000/login?id=yohan";
+            string url = $"http://{_serverhost}/login?id={_username}";
             HttpWebRequest _req = (HttpWebRequest)WebRequest.Create(url);
             _req.Method = "GET";
             using (HttpWebResponse _res = (HttpWebResponse)_req.GetResponse())
@@ -53,7 +68,7 @@ namespace wpf_desktop_shortcut.Business.Login
 
                 if (status == HttpStatusCode.OK)
                 {
-                    Auth.ServerHost = jobj["HostIP"]?.ToString();
+                    Auth.ServerHost = _serverhost;
                     Auth.UserName = jobj["UserName"]?.ToString();
                     Auth.LikeName = jobj["PackageJson"].ToString();
                 }

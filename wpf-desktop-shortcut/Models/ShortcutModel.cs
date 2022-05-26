@@ -16,7 +16,11 @@ namespace wpf_desktop_shortcut.Models
         public string IconName 
         { 
             get{ return _iconName; }
-            set{ _iconName = value; OnPropertyChanged(); }
+            set{ 
+                _iconName = value;
+                if (value == "null") _iconName = null;
+                OnPropertyChanged(); 
+            }
         }
         private string _iconBase64;
         public string IconBase64 {
@@ -24,6 +28,7 @@ namespace wpf_desktop_shortcut.Models
             set 
             { 
                 _iconBase64 = value;
+                if (value == "null") _iconBase64 = null;
                 OnPropertyChanged();
             }
         }
@@ -32,7 +37,12 @@ namespace wpf_desktop_shortcut.Models
         public string FilePath 
         {
             get { return _filePath; } 
-            set { _filePath = value; OnPropertyChanged(); } 
+            set { 
+                _filePath = value; 
+                if (value == "null") _filePath = null;
+                OnPropertyChanged(); 
+            }
+            
         }
         private ExecuteTypes _executeType;
         public ExecuteTypes ExecuteType 
